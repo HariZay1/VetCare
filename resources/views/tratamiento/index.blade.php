@@ -35,14 +35,12 @@
                                 <thead class="thead">
                                     <tr>
                                         <th>No</th>
-                                        
-									<th >Cita Id</th>
-									<th >Mascota Id</th>
-									<th >Descripcion</th>
-									<th >Receta</th>
-									<th >Costo</th>
-									<th >Fecha Seguimiento</th>
-
+                                        <th>Cita (Motivo)</th>
+                                        <th>Mascota</th>
+                                        <th>Descripción</th>
+                                        <th>Receta</th>
+                                        <th>Costo</th>
+                                        <th>Fecha Seguimiento</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -50,13 +48,27 @@
                                     @foreach ($tratamientos as $tratamiento)
                                         <tr>
                                             <td>{{ ++$i }}</td>
-                                            
-										<td >{{ $tratamiento->cita_id }}</td>
-										<td >{{ $tratamiento->mascota_id }}</td>
-										<td >{{ $tratamiento->descripcion }}</td>
-										<td >{{ $tratamiento->receta }}</td>
-										<td >{{ $tratamiento->costo }}</td>
-										<td >{{ $tratamiento->fecha_seguimiento }}</td>
+
+                                        <td>
+                                            @if($tratamiento->cita)
+                                                {{ Str::limit($tratamiento->cita->motivo, 60) }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($tratamiento->mascota)
+                                                {{ $tratamiento->mascota->nombre }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td>{{ $tratamiento->descripcion }}</td>
+                                        <td>{{ $tratamiento->receta }}</td>
+                                        <td>{{ $tratamiento->costo }}</td>
+                                        <td>{{ optional($tratamiento->fecha_seguimiento)->format('Y-m-d') }}</td>
 
                                             <td>
                                                 <form action="{{ route('tratamientos.destroy', $tratamiento->id) }}" method="POST">

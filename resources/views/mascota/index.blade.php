@@ -15,9 +15,26 @@
             </p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{{ route('mascotas.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Registrar Mascota
-            </a>
+            <div class="btn-group" role="group" aria-label="Acciones">
+                @if(auth()->user()->hasRole('cliente'))
+                    <a href="{{ route('cliente.mascotas.export.excel') }}" class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                    </a>
+                    <a href="{{ route('cliente.mascotas.export.pdf') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                @else
+                    <a href="{{ route('mascotas.export.excel') }}" class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                    </a>
+                    <a href="{{ route('mascotas.export.pdf') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                @endif
+                <a href="{{ route('mascotas.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Registrar Mascota
+                </a>
+            </div>
         </div>
     </div>
 

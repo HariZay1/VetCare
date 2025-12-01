@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\VeterinariosExport;
 
 class VeterinarioController extends Controller
 {
@@ -14,6 +17,18 @@ class VeterinarioController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('role:admin');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new VeterinariosExport, 'veterinarios_' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $veterinarios = Veterinario::with('user')->orderBy('created_at', 'desc')->get();
+        $pdf = PDF::loadView('pdf.veterinarios-lista', compact('veterinarios'));
+        return $pdf->download('veterinarios_' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function index(Request $request)

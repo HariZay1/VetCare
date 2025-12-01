@@ -156,19 +156,16 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('info', 'Completa tu perfil de propietario.');
         }
         
-        // Mis mascotas
         $misMascotas = Mascota::where('propietario_id', $propietario->id)
             ->where('activo', true)
             ->get();
         
-        // Próximas citas
         $proximasCitas = Cita::with(['mascota', 'veterinario'])
             ->where('propietario_id', $propietario->id)
             ->where('fecha_hora', '>=', now())
             ->orderBy('fecha_hora', 'asc')
             ->get();
-        
-        // Historial reciente
+    
         $historialCitas = Cita::with(['mascota', 'veterinario'])
             ->where('propietario_id', $propietario->id)
             ->where('fecha_hora', '<', now())

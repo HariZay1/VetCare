@@ -113,14 +113,20 @@
                                         <span class="{{ $cita->estado_badge }} d-block mb-2">{{ $cita->estado_texto }}</span>
                                         
                                         @if($cita->estado !== 'completada')
-                                            <button type="button" class="btn btn-success btn-sm w-100 mb-2" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#modalAtender{{ $cita->id }}">
+                                            <button type="button" class="btn btn-success btn-sm w-100 mb-2"
+                                                onclick="openAtenderModal(this)"
+                                                data-cita-id="{{ $cita->id }}"
+                                                data-mascota-name="{{ $cita->mascota->nombre }}"
+                                                data-propietario-name="{{ $cita->propietario->nombre_completo }}"
+                                                data-motivo="{{ e($cita->motivo) }}"
+                                                data-costo="{{ $cita->costo }}"
+                                                data-diagnostico="{{ e($cita->diagnostico) }}"
+                                            >
                                                 <i class="bi bi-clipboard-check"></i> Atender
                                             </button>
                                         @endif
-                                        
-                                        <a href="{{ route('citas.show', $cita) }}" class="btn btn-primary btn-sm w-100 mb-2">
+
+                                        <a href="{{ route('veterinario.citas.show', $cita) }}" class="btn btn-primary btn-sm w-100 mb-2">
                                             <i class="bi bi-eye"></i> Ver Ficha
                                         </a>
                                         
@@ -140,51 +146,7 @@
                             </div>
                         </div>
 
-                        <!-- Modal Atender Cita -->
-                        <div class="modal fade" id="modalAtender{{ $cita->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <form action="{{ route('citas.completar', $cita) }}" method="POST">
-                                        @csrf
-                                        <div class="modal-header bg-primary text-white">
-                                            <h5 class="modal-title">
-                                                <i class="bi bi-clipboard-check"></i> Atender Cita - {{ $cita->mascota->nombre }}
-                                            </h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label"><strong>Diagnóstico</strong></label>
-                                                <textarea name="diagnostico" class="form-control" rows="4" required 
-                                                          placeholder="Ingrese el diagnóstico...">{{ $cita->diagnostico }}</textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label"><strong>Receta/Tratamiento</strong></label>
-                                                <textarea name="receta" class="form-control" rows="4" 
-                                                          placeholder="Medicamentos, dosis, indicaciones...">{{ $cita->receta }}</textarea>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <label class="form-label"><strong>Costo (Bs.)</strong></label>
-                                                    <input type="number" name="costo" class="form-control" step="0.01" 
-                                                           value="{{ $cita->costo }}" placeholder="0.00">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label"><strong>Fecha de Seguimiento</strong></label>
-                                                    <input type="date" name="fecha_seguimiento" class="form-control">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <button type="submit" class="btn btn-success">
-                                                <i class="bi bi-check-circle"></i> Completar Atención
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Modal placeholder: one modal used for all citas (populated via JS) -->
                     @empty
                         <div class="text-center py-5">
                             <i class="bi bi-calendar-x fs-1 text-muted"></i>
@@ -208,8 +170,8 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="mb-1">{{ $cita->mascota->nombre }}</h6>
-                                    <small class="text-muted d-block">
-                                        <i class="bi bi-person"></i> {{ $cita->propietario->nombre_completo }}
+
+                                <!-- Single modal for attending citas (dynamic) -->
                                     </small>
                                     <small class="text-muted d-block">
                                         <i class="bi bi-clock"></i> {{ $cita->fecha_hora->format('d/m/Y H:i') }}
@@ -236,7 +198,7 @@
                     <a href="{{ route('tratamientos.index') }}" class="btn btn-outline-primary w-100 mb-2">
                         <i class="bi bi-clipboard-pulse"></i> Historial de Tratamientos
                     </a>
-                    <a href="{{ route('citas.index') }}" class="btn btn-outline-success w-100 mb-2">
+                    <a href="{{ route('veterinario.citas') }}" class="btn btn-outline-success w-100 mb-2">
                         <i class="bi bi-calendar-check"></i> Todas Mis Citas
                     </a>
                     <a href="{{ route('mascotas.index') }}" class="btn btn-outline-info w-100">
@@ -247,4 +209,80 @@
         </div>
     </div>
 </div>
+<!-- Single modal for attending citas (dynamic) placed after content -->
+<div class="modal fade" id="modalAtenderVet" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="formAtenderVet" action="#" method="POST">
+                @csrf
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalAtenderTitle">
+                        <i class="bi bi-clipboard-check"></i> Atender Cita
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info" id="modalAtenderInfo">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Diagnóstico *</strong></label>
+                        <textarea name="diagnostico" id="modalDiagnostico" class="form-control" rows="4" required placeholder="Ingrese el diagnóstico..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Receta/Tratamiento</strong></label>
+                        <textarea name="receta" id="modalReceta" class="form-control" rows="4" placeholder="Medicamentos, dosis, indicaciones..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Costo (Bs.)</strong></label>
+                            <input type="number" name="costo" id="modalCosto" class="form-control" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Fecha de Seguimiento</strong></label>
+                            <input type="date" name="fecha_seguimiento" id="modalFechaSeguimiento" class="form-control" min="{{ now()->addDays(1)->format('Y-m-d') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Completar Atención
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function openAtenderModal(btn) {
+        const citaId = btn.getAttribute('data-cita-id');
+        const mascota = btn.getAttribute('data-mascota-name');
+        const propietario = btn.getAttribute('data-propietario-name');
+        const motivo = btn.getAttribute('data-motivo');
+        const costo = btn.getAttribute('data-costo') || '';
+        const diagnostico = btn.getAttribute('data-diagnostico') || '';
+
+        const form = document.getElementById('formAtenderVet');
+        form.action = '/citas/' + citaId + '/completar';
+
+        document.getElementById('modalAtenderTitle').innerText = 'Atender Cita - ' + mascota;
+        document.getElementById('modalAtenderInfo').innerHTML = '<strong>Mascota:</strong> ' + mascota + '<br><strong>Propietario:</strong> ' + propietario + '<br><strong>Motivo:</strong> ' + motivo;
+        document.getElementById('modalCosto').value = costo;
+        document.getElementById('modalDiagnostico').value = diagnostico;
+        document.getElementById('modalReceta').value = '';
+        document.getElementById('modalFechaSeguimiento').value = '';
+
+        const modalEl = document.getElementById('modalAtenderVet');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+</script>
+@endpush
+
 @endsection

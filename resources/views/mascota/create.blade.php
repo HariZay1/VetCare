@@ -9,7 +9,9 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('mascotas.index') }}">Mascotas</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ auth()->user()->hasRole('cliente') ? route('cliente.mascotas') : route('mascotas.index') }}">Mascotas</a>
+                    </li>
                     <li class="breadcrumb-item active">Registrar Nueva Mascota</li>
                 </ol>
             </nav>
@@ -59,22 +61,30 @@
                             <!-- Propietario -->
                             <div class="col-md-6">
                                 <label class="form-label"><i class="bi bi-person"></i> Propietario *</label>
-                                <select name="propietario_id" class="form-select @error('propietario_id') is-invalid @enderror" required>
-                                    <option value="">Seleccione un propietario...</option>
-                                    @foreach($propietarios as $propietario)
-                                        <option value="{{ $propietario->id }}" {{ old('propietario_id') == $propietario->id ? 'selected' : '' }}>
-                                            {{ $propietario->nombre_completo }} - CI: {{ $propietario->ci }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('propietario_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">
-                                    <a href="{{ route('propietarios.create') }}" target="_blank">
-                                        <i class="bi bi-plus-circle"></i> Registrar nuevo propietario
-                                    </a>
-                                </small>
+                                @if(auth()->user()->hasRole('cliente'))
+                                    <input type="text" 
+                                           class="form-control" 
+                                           value="{{ $propietarioCliente->nombre_completo }}" 
+                                           disabled>
+                                    <input type="hidden" name="propietario_id" value="{{ $propietarioCliente->id }}">
+                                @else
+                                    <select name="propietario_id" class="form-select @error('propietario_id') is-invalid @enderror" required>
+                                        <option value="">Seleccione un propietario...</option>
+                                        @foreach($propietarios as $propietario)
+                                            <option value="{{ $propietario->id }}" {{ old('propietario_id') == $propietario->id ? 'selected' : '' }}>
+                                                {{ $propietario->nombre_completo }} - CI: {{ $propietario->ci }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('propietario_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">
+                                        <a href="{{ route('propietarios.create') }}" target="_blank">
+                                            <i class="bi bi-plus-circle"></i> Registrar nuevo propietario
+                                        </a>
+                                    </small>
+                                @endif
                             </div>
 
                             <!-- Nombre -->
@@ -160,7 +170,8 @@
                                 @enderror
                             </div>
 
-                            <!-- Estado -->
+                            <!-- Estado (solo visible para admin/recepcion) -->
+                            @if(!auth()->user()->hasRole('cliente'))
                             <div class="col-md-6">
                                 <label class="form-label"><i class="bi bi-toggle-on"></i> Estado</label>
                                 <select name="activo" class="form-select">
@@ -168,6 +179,9 @@
                                     <option value="0" {{ old('activo') == 0 ? 'selected' : '' }}>Inactivo</option>
                                 </select>
                             </div>
+                            @else
+                                <input type="hidden" name="activo" value="1">
+                            @endif
 
                             <!-- Notas -->
                             <div class="col-12">
@@ -188,7 +202,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save"></i> Registrar Mascota
                                 </button>
-                                <a href="{{ route('mascotas.index') }}" class="btn btn-secondary">
+                                <a href="{{ auth()->user()->hasRole('cliente') ? route('cliente.mascotas') : route('mascotas.index') }}" class="btn btn-secondary">
                                     <i class="bi bi-x-circle"></i> Cancelar
                                 </a>
                             </div>
@@ -232,4 +246,4 @@
         }
     });
 </script>
-@endpush
+@endpushs

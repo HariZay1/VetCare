@@ -9,7 +9,9 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('mascotas.index') }}">Mascotas</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ auth()->user()->hasRole('cliente') ? route('cliente.mascotas') : route('mascotas.index') }}">Mascotas</a>
+                    </li>
                     <li class="breadcrumb-item active">Editar: {{ $mascota->nombre }}</li>
                 </ol>
             </nav>
@@ -184,7 +186,7 @@
                                 <a href="{{ route('mascotas.show', $mascota) }}" class="btn btn-info">
                                     <i class="bi bi-eye"></i> Ver Ficha
                                 </a>
-                                <a href="{{ route('mascotas.index') }}" class="btn btn-secondary">
+                                <a href="{{ auth()->user()->hasRole('cliente') ? route('cliente.mascotas') : route('mascotas.index') }}" class="btn btn-secondary">
                                     <i class="bi bi-x-circle"></i> Cancelar
                                 </a>
                             </div>

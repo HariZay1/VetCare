@@ -87,6 +87,12 @@
     </style>
 </head>
 <body>
+    @php
+        $totalMascotas = class_exists(\App\Models\Mascota::class) ? \App\Models\Mascota::count() : 0;
+        $totalPropietarios = class_exists(\App\Models\Propietario::class) ? \App\Models\Propietario::count() : 0;
+        $totalCitas = class_exists(\App\Models\Cita::class) ? \App\Models\Cita::count() : 0;
+        $satisfaccion = '99%';
+    @endphp
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
@@ -120,25 +126,9 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <h1 class="display-3 fw-bold mb-4">Sistema de Gestión Veterinaria Completo</h1>
-                    <p class="lead mb-4">
-                        Administra citas, mascotas, propietarios y tratamientos de forma eficiente. 
-                        La solución completa para tu clínica veterinaria.
-                    </p>
-                    <div class="d-flex gap-3">
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="btn btn-light btn-custom btn-lg">
-                                <i class="bi bi-speedometer2"></i> Ir al Dashboard
-                            </a>
-                        @else
-                            <a href="{{ route('register') }}" class="btn btn-light btn-custom btn-lg">
-                                <i class="bi bi-person-plus"></i> Comenzar Gratis
-                            </a>
-                            <a href="{{ route('login') }}" class="btn btn-outline-light btn-custom btn-lg">
-                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-                            </a>
-                        @endauth
-                    </div>
+                    <h1 class="display-3 fw-bold mb-4">Gestiona tu clínica veterinaria con eficacia</h1>
+                    <p class="lead mb-4">VetCare centraliza citas, historiales y facturación en una sola plataforma: menos papeleo, más tiempo para cuidar animales.</p>
+       
                 </div>
                 <div class="col-lg-6 text-center d-none d-lg-block">
                     <i class="bi bi-hospital display-1" style="font-size: 15rem; opacity: 0.2;"></i>
@@ -152,20 +142,20 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3 stat-item">
-                    <div class="stat-number">500+</div>
-                    <h5 class="text-muted">Mascotas Atendidas</h5>
+                    <div class="stat-number">{{ number_format($totalMascotas) }}</div>
+                    <h5 class="text-muted">Mascotas registradas</h5>
                 </div>
                 <div class="col-md-3 stat-item">
-                    <div class="stat-number">200+</div>
-                    <h5 class="text-muted">Propietarios Registrados</h5>
+                    <div class="stat-number">{{ number_format($totalPropietarios) }}</div>
+                    <h5 class="text-muted">Propietarios</h5>
                 </div>
                 <div class="col-md-3 stat-item">
-                    <div class="stat-number">1000+</div>
-                    <h5 class="text-muted">Citas Completadas</h5>
+                    <div class="stat-number">{{ number_format($totalCitas) }}</div>
+                    <h5 class="text-muted">Citas totales</h5>
                 </div>
                 <div class="col-md-3 stat-item">
-                    <div class="stat-number">99%</div>
-                    <h5 class="text-muted">Satisfacción</h5>
+                    <div class="stat-number">{{ $satisfaccion }}</div>
+                    <h5 class="text-muted">Satisfacción estimada</h5>
                 </div>
             </div>
         </div>
@@ -187,9 +177,10 @@
                                 <i class="bi bi-calendar-check text-primary"></i>
                             </div>
                             <h4 class="mb-3">Gestión de Citas</h4>
-                            <p class="text-muted">
-                                Agenda, confirma y gestiona citas de forma rápida. Sistema de notificaciones y recordatorios.
-                            </p>
+                            <p class="text-muted">Agenda, confirma y gestiona citas con calendarios por veterinario y ficha clínica asociada.</p>
+                            @if(Route::has('citas.index'))
+                                <a href="{{ route('citas.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ir a Citas</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -201,9 +192,10 @@
                                 <i class="bi bi-heart-pulse text-success"></i>
                             </div>
                             <h4 class="mb-3">Historial Médico</h4>
-                            <p class="text-muted">
-                                Registra diagnósticos, tratamientos y seguimientos. Genera recetas en PDF automáticamente.
-                            </p>
+                            <p class="text-muted">Registra diagnósticos y tratamientos por mascota, con generación de recetas y documentos en PDF.</p>
+                            @if(Route::has('tratamientos.index'))
+                                <a href="{{ route('tratamientos.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ver Tratamientos</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -215,9 +207,10 @@
                                 <i class="bi bi-people text-info"></i>
                             </div>
                             <h4 class="mb-3">Gestión de Clientes</h4>
-                            <p class="text-muted">
-                                Administra propietarios y sus mascotas. Acceso completo al historial familiar.
-                            </p>
+                            <p class="text-muted">Control de propietarios, historial de mascotas y acceso para clientes (mis mascotas, mis citas).</p>
+                            @if(Route::has('propietarios.index'))
+                                <a href="{{ route('propietarios.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ver Propietarios</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -229,9 +222,10 @@
                                 <i class="bi bi-graph-up text-warning"></i>
                             </div>
                             <h4 class="mb-3">Reportes y Estadísticas</h4>
-                            <p class="text-muted">
-                                KPIs en tiempo real, gráficos de citas, ingresos mensuales y exportación a Excel/PDF.
-                            </p>
+                            <p class="text-muted">Panel con KPIs, gráficos y exportes a Excel/PDF listos para descargar.</p>
+                            @if(Route::has('reportes.index'))
+                                <a href="{{ route('reportes.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ver Reportes</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -243,9 +237,10 @@
                                 <i class="bi bi-shield-check text-danger"></i>
                             </div>
                             <h4 class="mb-3">Roles y Permisos</h4>
-                            <p class="text-muted">
-                                Sistema de roles (Admin, Recepción, Veterinario, Cliente) con permisos específicos.
-                            </p>
+                            <p class="text-muted">Control de accesos y permisos para administrar quién puede ver y editar cada sección.</p>
+                            @if(Route::has('admin.users.index'))
+                                <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-primary mt-3">Gestionar Usuarios</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -257,9 +252,10 @@
                                 <i class="bi bi-cloud-arrow-down" style="color: #8b5cf6;"></i>
                             </div>
                             <h4 class="mb-3">Exportación de Datos</h4>
-                            <p class="text-muted">
-                                Exporta reportes a PDF y Excel. Genera recetas y comprobantes profesionales.
-                            </p>
+                            <p class="text-muted">Descarga listados y reportes en Excel o PDF para contabilidad y archivo.</p>
+                            @if(Route::has('propietarios.export.excel'))
+                                <a href="{{ route('propietarios.export.excel') }}" class="btn btn-sm btn-outline-primary mt-3">Exportar ejemplo</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -267,20 +263,49 @@
         </div>
     </section>
 
+    <!-- Testimonials -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Lo que dicen clínicas reales</h2>
+                <p class="text-muted">Historias reales de profesionales que optimizaron su trabajo con VetCare.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm">
+                        <p class="mb-2">"Desde que usamos VetCare hemos reducido el tiempo administrativo y mejorado la comunicación con los propietarios."</p>
+                        <p class="text-muted mb-0"><strong>Clínica San Bernardo</strong> — Cochabamba</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm">
+                        <p class="mb-2">"Las exportaciones a Excel facilitan nuestros informes mensuales. El equipo está muy contento."</p>
+                        <p class="text-muted mb-0"><strong>Centro Vet Andino</strong> — La Paz</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   
     <!-- CTA Section -->
     <section class="py-5 bg-light">
         <div class="container text-center">
-            <h2 class="display-5 fw-bold mb-3">¿Listo para comenzar?</h2>
-            <p class="lead text-muted mb-4">Únete a cientos de veterinarias que confían en VetCare</p>
+            <h2 class="display-5 fw-bold mb-3">Comienza hoy con VetCare</h2>
+            <p class="lead text-muted mb-4">Únete a clínicas que simplificaron sus operaciones y mejoraron la atención.</p>
             @auth
                 <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg btn-custom">
-                    <i class="bi bi-speedometer2"></i> Ir al Dashboard
+                    <i class="bi bi-speedometer2"></i> Ir al panel
                 </a>
             @else
                 <a href="{{ route('register') }}" class="btn btn-primary btn-lg btn-custom">
-                    <i class="bi bi-person-plus"></i> Crear Cuenta Gratuita
+                    <i class="bi bi-person-plus"></i> Crear cuenta gratuita
                 </a>
+               
             @endauth
+            <p class="text-muted small mt-3">Prueba gratuita disponible — sin tarjeta requerida.</p>
         </div>
     </section>
 

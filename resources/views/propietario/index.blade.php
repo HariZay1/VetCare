@@ -14,6 +14,14 @@
             <a href="{{ route('propietarios.create') }}" class="btn btn-primary">
                 <i class="bi bi-person-plus"></i> Registrar Propietario
             </a>
+            <div class="btn-group ms-2" role="group">
+                <a href="{{ route('propietarios.export.excel') }}" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <a href="{{ route('propietarios.export.pdf') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
         </div>
     </div>
 

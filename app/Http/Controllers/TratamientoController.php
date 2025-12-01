@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Requests\TratamientoRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TratamientosExport;
 
 class TratamientoController extends Controller
 {
@@ -16,10 +19,22 @@ class TratamientoController extends Controller
      */
     public function index(Request $request): View
     {
-        $tratamientos = Tratamiento::paginate();
+        $tratamientos = Tratamiento::with(['cita', 'mascota'])->orderBy('created_at', 'desc')->paginate();
 
         return view('tratamiento.index', compact('tratamientos'))
             ->with('i', ($request->input('page', 1) - 1) * $tratamientos->perPage());
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new TratamientosExport, 'tratamientos_' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $tratamientos = Tratamiento::with(['cita','mascota'])->orderBy('created_at', 'desc')->get();
+        $pdf = PDF::loadView('pdf.tratamientos-lista', compact('tratamientos'));
+        return $pdf->download('tratamientos_' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -48,7 +63,7 @@ class TratamientoController extends Controller
      */
     public function show($id): View
     {
-        $tratamiento = Tratamiento::find($id);
+        $tratamiento = Tratamiento::with(['cita', 'mascota'])->findOrFail($id);
 
         return view('tratamiento.show', compact('tratamiento'));
     }

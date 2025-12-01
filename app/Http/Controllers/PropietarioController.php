@@ -7,13 +7,78 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PropietariosExport;
 
 class PropietarioController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:admin|recepcion');
+        $this->middleware('role:admin|recepcion')->except(['createCliente','storeCliente','editCliente','updateCliente','show']);
+    }
+
+
+    public function createCliente()
+    {
+        $user = auth()->user();
+        return view('propietario.create_cliente', compact('user'));
+    }
+
+
+    public function storeCliente(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'ci' => 'required|string|max:20|unique:propietarios,ci',
+            'telefono' => 'required|string|max:20',
+            'email' => ['required','email', Rule::unique('propietarios','email')],
+            'direccion' => 'nullable|string',
+        ]);
+
+        $validated['user_id'] = auth()->id();
+
+        $propietario = Propietario::create($validated);
+
+        return redirect()->route('dashboard')->with('success', 'Perfil de propietario completado correctamente');
+    }
+
+    public function editCliente()
+    {
+        $propietario = Propietario::where('user_id', auth()->id())->firstOrFail();
+        return view('propietario.edit_cliente', compact('propietario'));
+    }
+
+    public function updateCliente(Request $request)
+    {
+        $propietario = Propietario::where('user_id', auth()->id())->firstOrFail();
+
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'ci' => ['required','string','max:20', Rule::unique('propietarios')->ignore($propietario->id)],
+            'telefono' => 'required|string|max:20',
+            'email' => ['required','email', Rule::unique('propietarios')->ignore($propietario->id)],
+            'direccion' => 'nullable|string',
+        ]);
+
+        $propietario->update($validated);
+
+        return redirect()->route('dashboard')->with('success', 'Perfil actualizado correctamente');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new PropietariosExport, 'propietarios_' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $propietarios = Propietario::with('user')->orderBy('created_at', 'desc')->get();
+        $pdf = PDF::loadView('pdf.propietarios-lista', compact('propietarios'));
+        return $pdf->download('propietarios_' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function index(Request $request)
